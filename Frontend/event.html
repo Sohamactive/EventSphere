@@ -3,45 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="View event details, agenda schedule, register, and review on EventSphere.">
-  <title>Event Details – EventSphere</title>
+  <title>Event Details — EventSphere</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .event-banner { width: 100%; height: 300px; background-size: cover; background-position: center; position: relative; }
+    .event-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.6)); }
+    .event-banner-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem 0;
+      z-index: 2; color: #fff;
+    }
+    .event-banner-overlay .container { display: flex; justify-content: space-between; align-items: end; gap: 1.5rem; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; padding: 2rem 0; }
+    .detail-section { margin-bottom: 1.5rem; }
+    .detail-section h3 {
+      font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .detail-section h3 .material-symbols-outlined { font-size: 18px; color: var(--text-muted); }
+    .detail-text { font-size: 0.9rem; line-height: 1.7; color: var(--text-secondary); }
+    .sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; position: sticky; top: 72px; }
+    .sidebar-card h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem; }
+    .sidebar-card h4 .material-symbols-outlined { font-size: 18px; color: var(--text-muted); }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: var(--text-muted); }
+    .info-value { font-weight: 500; color: var(--text); }
+    @media (max-width: 768px) {
+      .detail-grid { grid-template-columns: 1fr; }
+      .event-banner { height: 200px; }
+    }
+  </style>
 </head>
 <body>
-  <div class="page-wrapper" id="app">
-    <!-- Navbar -->
+  <div class="page-wrapper">
     <div id="navbar-placeholder"></div>
-
-    <main class="main-content" style="padding-top:0;">
-      <div id="event-detail-container">
-        <div class="spinner-center"><div class="spinner"></div></div>
-      </div>
+    <main class="main-content" id="event-container">
+      <div class="spinner-center" style="padding:5rem;"><div class="spinner"></div></div>
     </main>
   </div>
 
-  <!-- Feedback Review Modal -->
   <div class="modal-overlay" id="feedback-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Submit Community Review</h3>
-        <button class="modal-close" onclick="closeFeedbackModal()" id="feedback-modal-close">✕</button>
+        <h3>Submit Review</h3>
+        <button class="modal-close" onclick="closeFeedbackModal()">✕</button>
       </div>
-      <form onsubmit="handleFeedback(event)" id="feedback-form">
-        <div class="form-group text-center">
+      <form onsubmit="handleFeedback(event)">
+        <div class="form-group">
           <label class="form-label">Rating</label>
-          <div id="feedback-rating" class="star-rating" data-rating="0" style="font-size:2rem; justify-content:center; margin-top:0.5rem;">
-            <span class="star" data-value="1" onclick="setRating(1,'feedback-rating')">★</span>
-            <span class="star" data-value="2" onclick="setRating(2,'feedback-rating')">★</span>
-            <span class="star" data-value="3" onclick="setRating(3,'feedback-rating')">★</span>
-            <span class="star" data-value="4" onclick="setRating(4,'feedback-rating')">★</span>
-            <span class="star" data-value="5" onclick="setRating(5,'feedback-rating')">★</span>
+          <div id="feedback-rating" class="star-rating" data-rating="0" style="font-size:1.5rem;display:flex;gap:4px;margin-top:0.25rem;">
+            <span class="star" data-value="1" onclick="setRating(1,'feedback-rating')" style="cursor:pointer;">★</span>
+            <span class="star" data-value="2" onclick="setRating(2,'feedback-rating')" style="cursor:pointer;">★</span>
+            <span class="star" data-value="3" onclick="setRating(3,'feedback-rating')" style="cursor:pointer;">★</span>
+            <span class="star" data-value="4" onclick="setRating(4,'feedback-rating')" style="cursor:pointer;">★</span>
+            <span class="star" data-value="5" onclick="setRating(5,'feedback-rating')" style="cursor:pointer;">★</span>
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label" for="feedback-comment">Review / Comments</label>
-          <textarea class="form-textarea" id="feedback-comment" placeholder="Share your experience attending this event..." maxlength="1000"></textarea>
+          <label class="form-label" for="feedback-comment">Your Review</label>
+          <textarea class="form-textarea" id="feedback-comment" placeholder="Share your experience..." maxlength="1000"></textarea>
         </div>
-        <button type="submit" class="btn btn-primary btn-block" id="feedback-submit">Submit Review</button>
+        <button type="submit" class="btn btn-primary" style="width:100%;" id="feedback-submit">Submit Review</button>
       </form>
     </div>
   </div>
@@ -51,324 +74,156 @@
     document.getElementById('navbar-placeholder').innerHTML = renderNavbar('');
     initNavbar();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventId = urlParams.get('id');
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('id');
     let currentEvent = null;
 
-    async function loadEventDetail() {
-      if (!eventId) {
-        showEmpty('event-detail-container', 'error', 'Event not found', 'Invalid event ID.');
-        return;
-      }
-
-      try {
-        const res = await api(`/events/${eventId}`);
-        currentEvent = res.data.event;
-        const e = currentEvent;
-        document.title = `${e.title} – EventSphere`;
-
-        const user = Auth.getUser();
-        const isOwner = user && (String(e.createdBy?._id || e.createdBy) === String(user.id) || user.role === 'admin');
-        const deadlinePassed = new Date(e.registrationDeadline) < new Date();
-
-        // Load feedback
-        let feedbackHTML = '';
-        try {
-          const fbRes = await api(`/feedback/${eventId}`);
-          const feedbacks = fbRes.data.feedbacks || fbRes.data || [];
-          if (Array.isArray(feedbacks) && feedbacks.length > 0) {
-            feedbackHTML = feedbacks.map(fb => `
-              <div style="padding: 1rem 0; border-bottom: 1px solid var(--outline-variant);">
-                <div class="flex items-center justify-between">
-                  ${renderStars(fb.rating)}
-                  <span style="font-size:0.8rem; color:var(--text-muted);">${formatDate(fb.createdAt)}</span>
-                </div>
-                ${fb.comment ? `<p class="mt-xs" style="font-size:0.9rem; color:var(--on-surface);">${fb.comment}</p>` : ''}
-              </div>
-            `).join('');
-          } else {
-            feedbackHTML = '<p class="text-muted" style="font-size:0.9rem;">No reviews submitted yet.</p>';
-          }
-        } catch { feedbackHTML = '<p class="text-muted" style="font-size:0.9rem;">No reviews submitted yet.</p>'; }
-
-        document.getElementById('event-detail-container').innerHTML = `
-          <section class="hero-shell" style="padding:3.5rem 0 2rem;">
-            <div class="container hero-grid" style="grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr); align-items:start;">
-              <div>
-                ${renderLifecycleRail(e.status, false)}
-                <h1 class="hero-title" style="font-size: clamp(2.2rem, 4vw, 3.4rem); margin-top:1rem;">${e.title}</h1>
-                <p class="hero-copy">${e.description || 'No detailed description provided.'}</p>
-                <div class="hero-actions">
-                  <div class="stat-tile"><strong>${formatDateTime(e.date)}</strong><span>Event time</span></div>
-                  <div class="stat-tile"><strong>${formatDate(e.registrationDeadline)}</strong><span>Deadline</span></div>
-                  <div class="stat-tile"><strong>${e.venue}</strong><span>Venue</span></div>
-                </div>
-              </div>
-              <div class="card" style="background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.14); color:#fff;">
-                <div class="badge badge-amber" style="margin-bottom:0.75rem;">${e.category || 'General'}</div>
-                <h3 style="color:#fff; margin-bottom:0.5rem;">Registration</h3>
-                <p style="color:rgba(255,255,255,0.75);">Registration deadline and event status drive actions below.</p>
-                <div class="mt-md" id="registration-actions">
-                  ${Auth.isLoggedIn() && !isOwner && e.status === 'published' ? `
-                    ${!deadlinePassed ? `
-                      <button class="btn btn-primary btn-lg btn-block" onclick="registerForEvent()" id="btn-register">
-                        Join event <span class="material-symbols-outlined">arrow_forward</span>
-                      </button>
-                    ` : `
-                      <button class="btn btn-secondary btn-lg btn-block" disabled>Registration closed</button>
-                    `}
-                    <button class="btn btn-ghost mt-sm" onclick="cancelRegistration()" id="btn-cancel-reg" style="display:none;">Cancel registration</button>
-                  ` : !Auth.isLoggedIn() ? `
-                    <a href="/login.html" class="btn btn-primary btn-lg btn-block" id="btn-login-to-register">Log in to register</a>
-                  ` : ''}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <div class="container" style="padding-top:1.75rem;">
-            <div class="grid" style="grid-template-columns: 1fr 340px; gap:1.5rem;">
-              
-              <!-- Left Main Column -->
-              <div class="flex flex-col gap-xl">
-                
-                <!-- About Section -->
-                <div class="card">
-                  <h3 class="flex items-center gap-sm mb-md" style="border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
-                    <span class="material-symbols-outlined" style="color:var(--primary);">info</span> About the Event
-                  </h3>
-                  <p style="font-size:1rem; line-height:1.7; color:var(--text);">${e.description || 'No detailed description provided.'}</p>
-                </div>
-
-                <div class="card">
-                  <h3 class="flex items-center gap-sm mb-md" style="border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
-                    <span class="material-symbols-outlined" style="color:var(--primary);">schedule</span> Main Agenda Schedule
-                  </h3>
-                  <div class="flex flex-col gap-md">
-                    <div class="card" style="padding:1.25rem;">
-                      <div class="flex items-center gap-md">
-                        <div style="background:var(--primary-container); color:var(--primary); padding:0.6rem 1rem; border-radius:var(--radius-md); text-align:center; min-width:85px;">
-                          <span style="font-size:0.75rem; font-weight:800; display:block;">SESSION</span>
-                          <span style="font-weight:700; font-size:0.95rem;">${formatTime(e.date)}</span>
-                        </div>
-                        <div>
-                          <h4 style="margin-bottom:0.25rem;">${e.title} - Main Session</h4>
-                          <p style="font-size:0.875rem;">Opening Keynote & Strategic Transformations in ${e.category || 'Technology'}.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Organizer Actions Panel -->
-                ${isOwner ? `
-                <div class="card">
-                  <h3 class="mb-md flex items-center gap-sm">
-                    <span class="material-symbols-outlined" style="color:var(--primary);">admin_panel_settings</span> Host Control Actions
-                  </h3>
-                  <div class="flex gap-sm" style="flex-wrap:wrap;">
-                    ${e.status === 'draft' ? `<button class="btn btn-success btn-sm" onclick="updateStatus('published')">Publish Event</button>` : ''}
-                    ${e.status === 'published' ? `<button class="btn btn-primary btn-sm" onclick="updateStatus('completed')">Mark Completed</button>` : ''}
-                    ${e.status !== 'cancelled' ? `<button class="btn btn-danger btn-sm" onclick="updateStatus('cancelled')">Cancel Event</button>` : ''}
-                    <button class="btn btn-secondary btn-sm" onclick="viewRegistrations()">View Registered Attendees</button>
-                  </div>
-                </div>
-                ` : ''}
-
-                <!-- Registrations Container -->
-                <div id="registrations-section" class="hidden">
-                  <div class="card">
-                    <h3 class="mb-md">Registered Attendees</h3>
-                    <div id="registrations-content"><div class="spinner-center"><div class="spinner"></div></div></div>
-                  </div>
-                </div>
-
-                <!-- Feedback & Reviews -->
-                <div class="card">
-                  <div class="flex items-center justify-between mb-md" style="border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
-                    <h3 class="flex items-center gap-sm" style="margin:0;">
-                      <span class="material-symbols-outlined" style="color:var(--warning);">star</span> Community Reviews
-                    </h3>
-                    ${Auth.isLoggedIn() ? `
-                      <button class="btn btn-secondary btn-sm" onclick="openFeedbackModal()">Leave Review</button>
-                    ` : ''}
-                  </div>
-                  <div id="feedback-list">${feedbackHTML}</div>
-                </div>
-
-              </div>
-
-              <!-- Right Column (Sidebar Cards) -->
-              <div class="flex flex-col gap-lg">
-                <!-- Host Card (Sample Style) -->
-                <div class="card text-center" style="padding:2rem 1.5rem;">
-                  <div style="width:64px; height:64px; border-radius:var(--radius-lg); background:var(--primary-container); color:var(--primary); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem;">
-                    <span class="material-symbols-outlined" style="font-size:32px;">corporate_fare</span>
-                  </div>
-                  <h4 style="margin-bottom:0.3rem;">Hosted by ${e.orgId?.name || 'Organization'}</h4>
-                  <p style="font-size:0.85rem; margin-bottom:1rem;">Delivering community events & digital experiences.</p>
-                  <div style="font-size:0.85rem; color:var(--on-surface-variant); text-align:left; border-top:1px solid var(--outline-variant); padding-top:1rem;" class="flex flex-col gap-xs">
-                    <div><strong>Host Name:</strong> ${e.createdBy?.name || 'Organizer'}</div>
-                    <div><strong>Max Capacity:</strong> ${e.capacity} Attendees</div>
-                    <div><strong>Venue:</strong> ${e.venue}</div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        `;
-
-        if (Auth.isLoggedIn() && !isOwner) {
-          checkRegistrationStatus();
-        }
-      } catch (err) {
-        showEmpty('event-detail-container', 'error', 'Error loading event', err.message);
-      }
+    function renderLifecycle(status) {
+      const steps = ['draft','published','completed'];
+      const idx = steps.indexOf(status);
+      const cancelled = status === 'cancelled';
+      return '<div class="lifecycle">' + steps.map((s, i) => {
+        let cls = 'lc-step';
+        if (i < idx && !cancelled) cls += ' active';
+        if (i === idx && !cancelled) cls += ' current';
+        if (cancelled && s === 'completed') cls = 'lc-step';
+        return `<div class="${cls}">${s.charAt(0).toUpperCase() + s.slice(1)}</div>`;
+      }).join('<span class="lc-arrow">→</span>') + (cancelled ? '<div class="lc-step cancelled">Cancelled</div>' : '') + '</div>';
     }
 
-    async function checkRegistrationStatus() {
+    function renderStarsDisplay(r) { let h = '<span class="stars">'; for (let i = 1; i <= 5; i++) h += i <= r ? '★' : '☆'; return h + '</span>'; }
+
+    async function loadEvent() {
+      if (!eventId) { document.getElementById('event-container').innerHTML = '<div class="empty-state" style="padding:5rem;"><div class="empty-icon"><span class="material-symbols-outlined">error</span></div><div class="empty-title">Event not found</div><div class="empty-text">No event ID provided.</div></div>'; return; }
       try {
-        const res = await api('/registrations/me');
-        const regs = res.data.registrations || [];
-        const myReg = regs.find(r => String(r.eventId?._id || r.eventId) === eventId && r.status !== 'cancelled');
-        if (myReg) {
-          const regBtn = document.getElementById('btn-register');
-          const cancelBtn = document.getElementById('btn-cancel-reg');
-          if (regBtn) {
-            regBtn.innerHTML = myReg.status === 'waitlisted' ? 'Waitlisted' : 'Registered ✓';
-            regBtn.disabled = true;
-            regBtn.classList.remove('btn-primary');
-            regBtn.classList.add('btn-success');
-          }
-          if (cancelBtn) cancelBtn.style.display = 'block';
+        const res = await api('/events/' + eventId);
+        currentEvent = res.data.event;
+        const e = currentEvent;
+        document.title = e.title + ' — EventSphere';
+        const user = Auth.getUser();
+        const isOwner = user && (String(e.createdBy?._id || e.createdBy) === String(user.id) || user.role === 'admin');
+        const banner = getSampleBanner(eventId.charCodeAt(0) % 6);
+
+        let feedback = [];
+        try { const f = await api('/feedback/' + eventId); feedback = f.data?.feedback || []; } catch(e) {}
+
+        const avgRating = feedback.length ? (feedback.reduce((s,f) => s + f.rating, 0) / feedback.length).toFixed(1) : '—';
+
+        document.getElementById('event-container').innerHTML = `
+          <div class="event-banner" style="background-image:url('${banner}');">
+            <div class="event-banner-overlay"><div class="container">
+              <div>
+                ${renderLifecycle(e.status)}
+                <h1 style="font-size:1.8rem;font-weight:700;margin-top:0.5rem;">${escapeHtml(e.title)}</h1>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:2rem;font-weight:700;">${avgRating}</div>
+                <div style="font-size:0.8rem;opacity:0.8;">${feedback.length} reviews</div>
+              </div>
+            </div></div>
+          </div>
+          <div class="container">
+            <div class="detail-grid">
+              <div>
+                <div class="card detail-section" style="padding:1.25rem;">
+                  <h3><span class="material-symbols-outlined">info</span> About This Event</h3>
+                  <div class="detail-text">${escapeHtml(e.description || 'No description provided.')}</div>
+                </div>
+                ${isOwner ? `
+                <div class="card detail-section" style="padding:1.25rem;">
+                  <h3><span class="material-symbols-outlined">admin_panel_settings</span> Organizer Controls</h3>
+                  <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                    ${e.status === 'draft' ? `<button class="btn btn-success btn-sm" onclick="updateStatus('published')"><span class="material-symbols-outlined">publish</span> Publish</button>` : ''}
+                    ${e.status === 'published' ? `<button class="btn btn-primary btn-sm" onclick="updateStatus('completed')"><span class="material-symbols-outlined">check_circle</span> Complete</button>` : ''}
+                    ${e.status !== 'cancelled' && e.status !== 'completed' ? `<button class="btn btn-danger btn-sm" onclick="updateStatus('cancelled')"><span class="material-symbols-outlined">cancel</span> Cancel</button>` : ''}
+                    <button class="btn btn-secondary btn-sm" onclick="toggleRegistrations()"><span class="material-symbols-outlined">group</span> Attendees</button>
+                  </div>
+                  <div id="registrations-panel" style="margin-top:1rem;display:none;"></div>
+                </div>` : ''}
+                <div class="card detail-section" style="padding:1.25rem;">
+                  <h3><span class="material-symbols-outlined">reviews</span> Reviews (${feedback.length})</h3>
+                  ${feedback.length === 0 ? '<div class="empty-state" style="padding:1.5rem;"><div class="empty-text">No reviews yet. Be the first to share your experience.</div></div>' :
+                    feedback.map(fb => `<div class="review-item"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;"><div style="display:flex;align-items:center;gap:0.5rem;"><div class="mini-avatar" style="margin-left:0;width:28px;height:28px;font-size:0.6rem;">${(fb.userId?.name || 'U')[0]}</div><div><div style="font-size:0.85rem;font-weight:600;">${escapeHtml(fb.userId?.name || 'User')}</div><div style="font-size:0.7rem;color:var(--text-muted);">${formatDate(fb.createdAt)}</div></div></div>${renderStarsDisplay(fb.rating)}</div><div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">${escapeHtml(fb.comment || '')}</div></div>`).join('')}
+                </div>
+              </div>
+              <div>
+                <div class="sidebar-card">
+                  <h4><span class="material-symbols-outlined">event</span> Event Details</h4>
+                  <div class="info-row"><span class="info-label">Date</span><span class="info-value">${formatDate(e.date)}</span></div>
+                  <div class="info-row"><span class="info-label">Time</span><span class="info-value">${formatTime(e.date)}</span></div>
+                  <div class="info-row"><span class="info-label">Deadline</span><span class="info-value">${formatDate(e.registrationDeadline)}</span></div>
+                  <div class="info-row"><span class="info-label">Venue</span><span class="info-value">${escapeHtml(e.venue || 'TBA')}</span></div>
+                  <div class="info-row"><span class="info-label">Category</span><span class="info-value">${escapeHtml(e.category || '—')}</span></div>
+                  <div class="info-row"><span class="info-label">Organizer</span><span class="info-value">${escapeHtml(e.orgId?.name || '—')}</span></div>
+                </div>
+                <div class="sidebar-card">
+                  <h4><span class="material-symbols-outlined">group</span> Capacity</h4>
+                  <div style="margin-bottom:0.75rem;">
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.3rem;"><span style="font-weight:600;">${e.registeredCount || 0} / ${e.capacity || 0}</span><span style="color:var(--text-muted);">${e.capacity ? Math.round((e.registeredCount||0)/e.capacity*100) : 0}%</span></div>
+                    <div class="progress"><div class="progress-fill" style="width:${e.capacity ? Math.min(100, (e.registeredCount||0)/e.capacity*100) : 0}%;"></div></div>
+                  </div>
+                  <div id="reg-actions"></div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+
+        const regEl = document.getElementById('reg-actions');
+        if (user && !isOwner) {
+          try {
+            const myRegs = await api('/registrations/me');
+            const myReg = (myRegs.data?.registrations || []).find(r => (r.eventId?._id || r.eventId) === eventId && r.status !== 'cancelled');
+            if (myReg) {
+              regEl.innerHTML = `<div style="display:flex;gap:0.5rem;"><span class="tag tag-green"><span class="tag-dot green"></span>${myReg.status}</span><button class="btn btn-ghost btn-sm" onclick="cancelRegistration()">Cancel</button></div>`;
+            } else {
+              regEl.innerHTML = `<button class="btn btn-primary" style="width:100%;" onclick="registerForEvent()"><span class="material-symbols-outlined">how_to_reg</span> Register</button>`;
+            }
+          } catch(e) { regEl.innerHTML = `<button class="btn btn-primary" style="width:100%;" onclick="registerForEvent()"><span class="material-symbols-outlined">how_to_reg</span> Register</button>`; }
+        } else if (!user) {
+          regEl.innerHTML = `<a href="/login.html" class="btn btn-primary" style="width:100%;text-align:center;">Sign in to register</a>`;
         }
-      } catch {}
+      } catch(e) { document.getElementById('event-container').innerHTML = '<div class="empty-state" style="padding:5rem;"><div class="empty-icon"><span class="material-symbols-outlined">error</span></div><div class="empty-title">Failed to load event</div><div class="empty-text">' + escapeHtml(e.message) + '</div></div>'; }
     }
 
     async function registerForEvent() {
-      if (!requireAuth()) return;
-      try {
-        const res = await api(`/registrations/${eventId}/register`, { method: 'POST' });
-        showToast(res.message || 'Registered successfully!', 'success');
-        loadEventDetail();
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
+      try { await api('/registrations/' + eventId + '/register', { method: 'POST' }); showToast('Registered!', 'success'); loadEvent(); } catch(e) { showToast(e.message, 'error'); }
     }
-
     async function cancelRegistration() {
       if (!confirm('Cancel your registration?')) return;
-      try {
-        await api(`/registrations/${eventId}/cancel`, { method: 'PATCH' });
-        showToast('Registration cancelled', 'info');
-        loadEventDetail();
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
+      try { await api('/registrations/' + eventId + '/cancel', { method: 'PATCH' }); showToast('Cancelled', 'info'); loadEvent(); } catch(e) { showToast(e.message, 'error'); }
     }
-
     async function updateStatus(status) {
-      if (!confirm(`Update status to ${status}?`)) return;
+      try { await api('/events/' + eventId, { method: 'PATCH', body: JSON.stringify({ status }) }); showToast('Updated!', 'success'); loadEvent(); } catch(e) { showToast(e.message, 'error'); }
+    }
+    async function toggleRegistrations() {
+      const panel = document.getElementById('registrations-panel');
+      if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+      panel.style.display = 'block';
+      panel.innerHTML = '<div class="spinner-center"><div class="spinner"></div></div>';
       try {
-        await api(`/events/${eventId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ status }),
-        });
-        showToast(`Event status updated to ${status}!`, 'success');
-        loadEventDetail();
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
+        const res = await api('/registrations/' + eventId);
+        const regs = res.data?.registrations || [];
+        if (!regs.length) { panel.innerHTML = '<div class="empty-text">No registrations yet.</div>'; return; }
+        panel.innerHTML = '<div class="table-wrap"><table><thead><tr><th>User</th><th>Status</th><th>Action</th></tr></thead><tbody>' +
+          regs.map(r => `<tr><td style="font-weight:500;">${escapeHtml(r.userId?.name || 'User')}</td><td>${statusBadge(r.status)}</td><td>${r.status !== 'attended' ? `<button class="btn btn-ghost btn-sm" onclick="markAttend('${r.userId?._id || r.userId}')">Mark</button>` : '<span class="tag tag-green"><span class="tag-dot green"></span>Attended</span>'}</td></tr>`).join('') +
+          '</tbody></table></div>';
+      } catch(e) { panel.innerHTML = '<div class="empty-text">Error: ' + escapeHtml(e.message) + '</div>'; }
     }
-
-    async function viewRegistrations() {
-      const section = document.getElementById('registrations-section');
-      section.classList.toggle('hidden');
-      if (!section.classList.contains('hidden')) {
-        try {
-          const res = await api(`/registrations/${eventId}`);
-          const regs = res.data.registrations || [];
-          if (regs.length === 0) {
-            document.getElementById('registrations-content').innerHTML = '<p class="text-muted">No registrations yet.</p>';
-            return;
-          }
-          document.getElementById('registrations-content').innerHTML = `
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Attendee</th>
-                    <th>Status</th>
-                    <th>Registered Date</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${regs.map(r => `
-                    <tr>
-                      <td style="font-weight:600;">${r.userId?.name || 'User'} (${r.userId?.email || ''})</td>
-                      <td>${statusBadge(r.status)}</td>
-                      <td>${formatDate(r.createdAt)}</td>
-                      <td>
-                        ${r.status === 'registered' ?
-                          `<button class="btn btn-success btn-sm" onclick="markAttendance('${r.userId?._id || r.userId}')">Mark Attended</button>` : 
-                          r.status === 'attended' ? '<span class="badge badge-success">Attended</span>' : '-'
-                        }
-                      </td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          `;
-        } catch (err) {
-          document.getElementById('registrations-content').innerHTML = `<p style="color:var(--error);">${err.message}</p>`;
-        }
-      }
+    async function markAttend(userId) {
+      try { await api('/registrations/' + eventId + '/attendance/' + userId, { method: 'PATCH' }); showToast('Marked!', 'success'); toggleRegistrations(); } catch(e) { showToast(e.message, 'error'); }
     }
-
-    async function markAttendance(userId) {
-      try {
-        await api(`/registrations/${eventId}/attendance/${userId}`, { method: 'PATCH' });
-        showToast('Attendance recorded!', 'success');
-        viewRegistrations();
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    function openFeedbackModal() {
-      document.getElementById('feedback-modal').classList.add('active');
-    }
-    function closeFeedbackModal() {
-      document.getElementById('feedback-modal').classList.remove('active');
-    }
-
+    function openFeedbackModal() { document.getElementById('feedback-modal').classList.add('active'); }
+    function closeFeedbackModal() { document.getElementById('feedback-modal').classList.remove('active'); }
     async function handleFeedback(e) {
       e.preventDefault();
-      const rating = parseInt(document.getElementById('feedback-rating').dataset.rating);
-      if (!rating || rating < 1) {
-        showToast('Please select a star rating', 'error');
-        return;
-      }
+      const rating = parseInt(document.getElementById('feedback-rating').dataset.rating || '0');
+      if (!rating) { showToast('Select a rating', 'error'); return; }
       try {
-        await api(`/feedback/${eventId}`, {
-          method: 'POST',
-          body: JSON.stringify({
-            rating,
-            comment: document.getElementById('feedback-comment').value,
-          }),
-        });
-        showToast('Thank you for your feedback!', 'success');
-        closeFeedbackModal();
-        loadEventDetail();
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
+        await api('/feedback/' + eventId, { method: 'POST', body: JSON.stringify({ rating, comment: document.getElementById('feedback-comment').value }) });
+        showToast('Review submitted!', 'success'); closeFeedbackModal(); loadEvent();
+      } catch(e) { showToast(e.message, 'error'); }
     }
-
-    loadEventDetail();
+    loadEvent();
   </script>
 </body>
 </html>

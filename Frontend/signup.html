@@ -3,72 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Create your EventSphere account to discover and host enterprise events.">
-  <title>Sign Up – EventSphere</title>
+  <title>Sign Up — EventSphere</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .auth-layout { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+    .auth-visual {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem; position: relative; overflow: hidden;
+    }
+    .auth-visual::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 70% 30%, rgba(16,185,129,0.12), transparent 60%);
+    }
+    .auth-visual-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700;
+      color: #fff; text-align: center; line-height: 1.15;
+      position: relative; z-index: 2; max-width: 320px;
+    }
+    .auth-visual-title span { color: #34d399; }
+    .auth-visual-sub {
+      font-size: 0.95rem; color: rgba(255,255,255,0.6); text-align: center;
+      margin-top: 1rem; position: relative; z-index: 2; max-width: 300px; line-height: 1.6;
+    }
+    .auth-form-side {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 3rem; background: var(--surface);
+    }
+    .auth-card { max-width: 380px; width: 100%; margin: 0 auto; }
+    .auth-card h1 { font-size: 1.5rem; margin-bottom: 0.3rem; }
+    .auth-card p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.75rem; }
+    .role-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+    .role-btn {
+      padding: 0.6rem; text-align: center; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--surface);
+      cursor: pointer; font-size: 0.85rem; font-weight: 500;
+      color: var(--text-secondary); transition: all var(--transition);
+    }
+    .role-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-weight: 600; }
+    .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary); }
+    .auth-footer a { font-weight: 600; }
+    @media (max-width: 768px) {
+      .auth-layout { grid-template-columns: 1fr; }
+      .auth-visual { display: none; }
+    }
+  </style>
 </head>
 <body>
-  <div class="page-wrapper" id="app">
-    <div class="auth-page-container">
+  <div class="page-wrapper">
+    <div class="auth-layout">
+      <div class="auth-visual">
+        <div class="auth-visual-title">Start managing events <span>the right way.</span></div>
+        <p class="auth-visual-sub">Join organizers who use EventSphere to run professional, structured events.</p>
+      </div>
       <div class="auth-form-side">
         <div class="auth-card">
-        <div class="flex items-center gap-sm mb-xl" style="cursor:pointer;" onclick="window.location.href='/'">
-          <div class="brand-icon">
-            <span class="material-symbols-outlined">hub</span>
-          </div>
-          <span style="font-family:var(--font-heading); font-size:1.5rem; font-weight:800; color:var(--ink);">EventSphere</span>
-        </div>
-
-        <div>
-          <div class="hero-kicker" style="color:var(--ink); border-color:var(--border); background:var(--slate-fill);">New account</div>
-          <h1 class="mb-xs" style="font-size: 2rem; margin-top:0.9rem; color:var(--ink);">Create Account</h1>
-          <p class="mb-lg" style="font-size: 0.95rem;">Join event ops platform for organizers and participants.</p>
-
-          <form id="signup-form" onsubmit="handleSignup(event)" class="flex flex-col gap-md">
-            <div class="form-group mb-xs">
-              <label class="form-label" for="signup-name">Full Name</label>
-              <div class="input-icon-wrapper">
-                <span class="material-symbols-outlined">person</span>
-                <input class="form-input" type="text" id="signup-name" placeholder="John Doe" required autocomplete="name">
+          <a href="/" style="display:inline-flex;align-items:center;gap:0.5rem;font-weight:700;font-size:0.95rem;color:var(--text);text-decoration:none;margin-bottom:2rem;">
+            <div class="brand-icon" style="width:28px;height:28px;border-radius:6px;"><span class="material-symbols-outlined" style="font-size:16px;">event</span></div>
+            EventSphere
+          </a>
+          <h1>Create your account</h1>
+          <p>Choose your role and get started in seconds.</p>
+          <form onsubmit="handleSignup(event)">
+            <div class="role-toggle">
+              <div class="role-btn active" data-role="participant" onclick="setSignupRole('participant', this)" id="role-participant">
+                <span class="material-symbols-outlined" style="font-size:18px;display:block;margin-bottom:0.2rem;">person</span>
+                Participant
+              </div>
+              <div class="role-btn" data-role="organizer" onclick="setSignupRole('organizer', this)" id="role-organizer">
+                <span class="material-symbols-outlined" style="font-size:18px;display:block;margin-bottom:0.2rem;">admin_panel_settings</span>
+                Organizer
               </div>
             </div>
-
-            <div class="form-group mb-xs">
-              <label class="form-label" for="signup-email">Work Email</label>
-              <div class="input-icon-wrapper">
-                <span class="material-symbols-outlined">mail</span>
-                <input class="form-input" type="email" id="signup-email" placeholder="you@company.com" required autocomplete="email">
-              </div>
+            <input type="hidden" id="signup-role" value="participant">
+            <div class="form-group">
+              <label class="form-label" for="signup-name">Full name</label>
+              <input class="form-input" type="text" id="signup-name" placeholder="Jane Doe" required>
             </div>
-
-            <div class="form-group mb-xs">
+            <div class="form-group">
+              <label class="form-label" for="signup-email">Email address</label>
+              <input class="form-input" type="email" id="signup-email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
               <label class="form-label" for="signup-password">Password</label>
-              <div class="input-icon-wrapper">
-                <span class="material-symbols-outlined">lock</span>
-                <input class="form-input" type="password" id="signup-password" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password">
-              </div>
+              <input class="form-input" type="password" id="signup-password" placeholder="At least 6 characters" minlength="6" required>
             </div>
-
-            <div class="form-group mb-xs">
-              <label class="form-label" for="signup-role">Account Type</label>
-              <div class="auth-toggle" id="signup-role-toggle">
-                <button type="button" class="active" data-role="participant" onclick="setSignupRole('participant', this)">Participant</button>
-                <button type="button" data-role="organizer" onclick="setSignupRole('organizer', this)">Organizer</button>
-              </div>
-              <input type="hidden" id="signup-role" value="participant">
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block btn-lg mt-sm" id="signup-submit">
-              Create Account
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:0.5rem;" id="btn-signup">
+              Create account
             </button>
           </form>
-
-          <div class="auth-note">Organizer access starts with signup role. Dashboard and create flows stay role-aware.</div>
-
-          <div class="mt-xl text-center" style="font-size: 0.9rem; color: var(--on-surface-variant);">
-            Already have an account? <a href="/login.html" id="signup-to-login" class="font-bold">Log In</a>
+          <div class="auth-footer">
+            Already have an account? <a href="/login.html">Sign in</a>
           </div>
-        </div>
         </div>
       </div>
     </div>
@@ -76,20 +102,19 @@
 
   <script src="/js/app.js"></script>
   <script>
-    if (Auth.isLoggedIn()) window.location.href = '/dashboard.html';
+    if (Auth.isLoggedIn()) window.location.replace('/dashboard.html');
 
-    function setSignupRole(role, button) {
+    function setSignupRole(role, el) {
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
       document.getElementById('signup-role').value = role;
-      document.querySelectorAll('#signup-role-toggle button').forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
     }
 
     async function handleSignup(e) {
       e.preventDefault();
-      const btn = document.getElementById('signup-submit');
+      const btn = document.getElementById('btn-signup');
       btn.disabled = true;
-      btn.innerHTML = '<span class="material-symbols-outlined">sync</span> Creating account...';
-
+      btn.textContent = 'Creating account...';
       try {
         const res = await api('/auth/signup', {
           method: 'POST',
@@ -100,14 +125,13 @@
             role: document.getElementById('signup-role').value,
           }),
         });
-
         Auth.save(res.data);
-        showToast('Account created successfully!', 'success');
-        setTimeout(() => window.location.href = '/dashboard.html', 400);
+        showToast('Account created!', 'success');
+        setTimeout(() => window.location.href = '/dashboard.html', 300);
       } catch (err) {
         showToast(err.message, 'error');
         btn.disabled = false;
-        btn.innerHTML = 'Create Account';
+        btn.textContent = 'Create account';
       }
     }
   </script>

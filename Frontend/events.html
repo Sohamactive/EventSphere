@@ -3,120 +3,143 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Browse all community events on EventSphere. Filter by category, date, and venue.">
-  <title>Browse Events – EventSphere</title>
+  <title>Browse Events — EventSphere</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .page-header { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .page-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .page-desc { font-size: 0.9rem; color: var(--text-secondary); }
+    .search-bar {
+      display: flex; border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--surface); margin: 1.5rem 0 1rem; overflow: hidden;
+    }
+    .search-bar .material-symbols-outlined { display: grid; place-items: center; padding: 0 0.75rem; color: var(--text-muted); }
+    .search-input {
+      flex: 1; padding: 0.65rem 0.75rem; border: none; outline: none;
+      font-size: 0.9rem; background: transparent; color: var(--text);
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
+    .filter-btn {
+      padding: 0.4rem 0.9rem; font-size: 0.8rem; font-weight: 500;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--surface); color: var(--text-secondary);
+      cursor: pointer; transition: all var(--transition);
+    }
+    .filter-btn:hover { border-color: var(--border-strong); color: var(--text); }
+    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .events-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; padding-bottom: 2rem; }
+    .ev-card { cursor: pointer; }
+    .ev-card .card { height: 100%; display: flex; flex-direction: column; }
+    .ev-img { width: 100%; height: 180px; background-size: cover; background-position: center; position: relative; }
+    .ev-badge {
+      position: absolute; top: 0.75rem; left: 0.75rem;
+    }
+    .ev-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; }
+    .ev-tag {
+      display: inline-block; font-family: var(--font-mono); font-size: 0.6rem;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--primary); background: var(--primary-light);
+      padding: 0.15rem 0.5rem; border-radius: 9999px; margin-bottom: 0.5rem; align-self: flex-start;
+    }
+    .ev-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; line-height: 1.3; }
+    .ev-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.25rem; }
+    .ev-meta .material-symbols-outlined { font-size: 14px; }
+    .ev-footer {
+      margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8rem; color: var(--text-muted);
+    }
+    .pagination { display: flex; gap: 0.4rem; justify-content: center; padding: 1.5rem 0; }
+    .page-btn {
+      width: 36px; height: 36px; display: grid; place-items: center;
+      font-size: 0.85rem; font-weight: 500; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); background: var(--surface); color: var(--text);
+      cursor: pointer; transition: all var(--transition);
+    }
+    .page-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    @media (max-width: 1024px) { .events-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px) { .events-grid { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
-  <div class="page-wrapper" id="app">
-    <!-- Navbar -->
+  <div class="page-wrapper">
     <div id="navbar-placeholder"></div>
-
     <main class="main-content">
-      <div class="container">
-        <section class="section-block" style="padding-top:2rem;">
-          <div class="section-head">
-            <div>
-              <h1 class="section-title">Browse published events</h1>
-              <p class="section-subtitle">Search, filter, and open event records with status rail and capacity at a glance.</p>
-            </div>
-            <div id="events-header-actions"></div>
-          </div>
-
-          <div class="card" style="padding:1rem; margin-bottom:1rem;">
-            <div style="max-width: 640px; margin: 0 auto;" class="input-icon-wrapper">
-              <span class="material-symbols-outlined">search</span>
-              <input type="text" id="event-search-input" class="form-input" placeholder="Search events, organizers, or venues..." style="border-radius: 999px; padding-left: 3rem; height: 48px;" oninput="handleSearchInput()">
-            </div>
-            <div class="filter-chips mt-md" style="justify-content:center;" id="filter-chips">
-              <button class="filter-chip active" data-status="published" onclick="filterByStatus('published', this)" id="filter-published">Published</button>
-              <button class="filter-chip" data-status="" onclick="filterByStatus('', this)" id="filter-all">All</button>
-              <button class="filter-chip" data-status="draft" onclick="filterByStatus('draft', this)" id="filter-draft">Drafts</button>
-              <button class="filter-chip" data-status="completed" onclick="filterByStatus('completed', this)" id="filter-completed">Completed</button>
-            </div>
-          </div>
-
-          <div class="grid grid-3" id="events-grid">
-            <div class="spinner-center" style="grid-column:1/-1;"><div class="spinner"></div></div>
-          </div>
-
-          <div class="pagination mt-lg" id="pagination"></div>
-        </section>
-
+      <div class="page-header">
+        <div class="container">
+          <h1 class="page-title">Browse Events</h1>
+          <p class="page-desc">Discover and register for published events.</p>
+        </div>
+      </div>
+      <div class="container" style="padding-top:1.5rem;">
+        <div id="header-actions" style="margin-bottom:0.75rem;"></div>
+        <div class="search-bar">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" id="search-input" class="search-input" placeholder="Search events, organizers, venues..." oninput="debounceSearch()">
+        </div>
+        <div class="filters" id="filter-chips">
+          <button class="filter-btn active" onclick="filterBy('published', this)">Published</button>
+          <button class="filter-btn" onclick="filterBy('', this)">All</button>
+          <button class="filter-btn" onclick="filterBy('draft', this)">Drafts</button>
+          <button class="filter-btn" onclick="filterBy('completed', this)">Completed</button>
+        </div>
+        <div class="events-grid" id="events-grid"><div class="spinner-center" style="grid-column:1/-1;"><div class="spinner"></div></div></div>
+        <div class="pagination" id="pagination"></div>
       </div>
     </main>
   </div>
-
   <script src="/js/app.js"></script>
   <script>
     document.getElementById('navbar-placeholder').innerHTML = renderNavbar('events');
     initNavbar();
 
     if (Auth.isOrganizer()) {
-      document.getElementById('events-header-actions').innerHTML = `
-        <a href="/create-event.html" class="btn btn-primary btn-sm" id="events-create-btn">
-          <span class="material-symbols-outlined">add</span> Create Event
-        </a>
-      `;
+      document.getElementById('header-actions').innerHTML = '<a href="/create-event.html" class="btn btn-primary"><span class="material-symbols-outlined">add</span> Create Event</a>';
     }
 
-    let currentPage = 1;
-    let currentStatus = 'published';
-    let searchQuery = '';
-    let debounceTimer = null;
+    let curPage = 1, curStatus = 'published', curSearch = '', searchTimer = null;
+    const cats = ['Technology','Business','Design','Education','Social','Workshop'];
 
-    async function loadEvents(page = 1, status = currentStatus, search = searchQuery) {
-      currentPage = page;
-      currentStatus = status;
-      searchQuery = search;
+    function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => loadEvents(1, curStatus, document.getElementById('search-input').value.trim()), 350); }
+    function filterBy(s, el) { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); loadEvents(1, s, curSearch); }
 
+    async function loadEvents(page = 1, status = curStatus, search = curSearch) {
+      curPage = page; curStatus = status; curSearch = search;
       const grid = document.getElementById('events-grid');
       grid.innerHTML = '<div class="spinner-center" style="grid-column:1/-1;"><div class="spinner"></div></div>';
-
       try {
-        let queryParams = `page=${page}&limit=9`;
-        if (status) queryParams += `&status=${encodeURIComponent(status)}`;
-        if (search) queryParams += `&search=${encodeURIComponent(search)}`;
-
-        const res = await api(`/events?${queryParams}`);
-        const { events, total, pages } = res.data;
-
-        if (!events || events.length === 0) {
-          showEmpty('events-grid', 'search_off', 'No events found', 'Try adjusting your search terms or filter selection.');
-          document.getElementById('pagination').innerHTML = '';
-          return;
-        }
-
-        grid.innerHTML = events.map((e, i) => renderEventCard(e, i)).join('');
-
-        if (pages > 1) {
-          let paginationHTML = '';
-          for (let i = 1; i <= pages; i++) {
-            paginationHTML += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadEvents(${i})" id="page-${i}">${i}</button>`;
-          }
-          document.getElementById('pagination').innerHTML = paginationHTML;
-        } else {
-          document.getElementById('pagination').innerHTML = '';
-        }
-      } catch (err) {
-        showEmpty('events-grid', 'error', 'Error loading events', err.message);
-      }
+        let q = `page=${page}&limit=9`;
+        if (status) q += `&status=${encodeURIComponent(status)}`;
+        if (search) q += `&search=${encodeURIComponent(search)}`;
+        const res = await api('/events?' + q);
+        const events = res.data?.events || [];
+        const pages = res.data?.pages || 1;
+        if (!events.length) { showEmpty(grid, 'search_off', 'No events found', 'Try a different search or filter.'); document.getElementById('pagination').innerHTML = ''; return; }
+        grid.innerHTML = events.map((e, i) => {
+          const d = new Date(e.date || e.createdAt);
+          return `<div class="ev-card" onclick="window.location.href='/event.html?id=${e._id}'"><div class="card">
+            <div class="ev-img" style="background-image:url('${getSampleBanner(i)}');">
+              <div class="ev-badge">${statusBadge(e.status || 'published')}</div>
+            </div>
+            <div class="ev-body">
+              <div class="ev-tag">${cats[i % cats.length]}</div>
+              <div class="ev-name">${escapeHtml(e.title || 'Event')}</div>
+              <div class="ev-meta"><span class="material-symbols-outlined">location_on</span>${escapeHtml(e.venue || 'TBA')}</div>
+              <div class="ev-meta"><span class="material-symbols-outlined">group</span>Capacity: ${e.capacity || '—'}</div>
+              <div class="ev-footer">
+                <span>${escapeHtml(e.orgId?.name || 'Organization')}</span>
+                <span>${timeUntil(e.date)}</span>
+              </div>
+            </div>
+          </div></div>`;
+        }).join('');
+        let pag = '';
+        for (let i = 1; i <= pages; i++) pag += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadEvents(${i})">${i}</button>`;
+        document.getElementById('pagination').innerHTML = pag;
+      } catch (e) { showEmpty(grid, 'error', 'Error loading events', e.message); }
     }
-
-    function filterByStatus(status, el) {
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      loadEvents(1, status, searchQuery);
-    }
-
-    function handleSearchInput() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        const val = document.getElementById('event-search-input').value.trim();
-        loadEvents(1, currentStatus, val);
-      }, 350);
-    }
-
     loadEvents();
   </script>
 </body>

@@ -3,164 +3,809 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="EventSphere - enterprise event operations with lifecycle, capacity, and role-aware control.">
-  <title>EventSphere - Enterprise Event Management Platform</title>
+  <title>EventSphere — Enterprise Event Platform</title>
   <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* ══════════════════════════════════════
+       AURORA BACKGROUND
+       ══════════════════════════════════════ */
+    .aurora-bg {
+      position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+    }
+    .aurora-blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(120px); opacity: 0.06;
+    }
+    .aurora-1 { width: 600px; height: 600px; background: var(--primary); top: -200px; left: -100px; animation: float1 20s ease-in-out infinite; }
+    .aurora-2 { width: 500px; height: 500px; background: var(--secondary); top: 100px; right: -150px; animation: float2 25s ease-in-out infinite; }
+    .aurora-3 { width: 400px; height: 400px; background: #818CF8; bottom: -100px; left: 30%; animation: float3 22s ease-in-out infinite; }
+    @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,40px)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,30px)} }
+    @keyframes float3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-30px)} }
+
+    /* ══════════════════════════════════════
+       DOT GRID BACKGROUND
+       ══════════════════════════════════════ */
+    .dot-grid {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+      background-size: 32px 32px; opacity: 0.4;
+    }
+
+    /* ══════════════════════════════════════
+       HERO
+       ══════════════════════════════════════ */
+    .hero {
+      position: relative; padding: 7rem 0 5rem; overflow: hidden;
+    }
+    .hero-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 4rem; align-items: center; position: relative; z-index: 2; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.75rem; font-weight: 600; color: var(--primary);
+      background: var(--primary-light); border: 1px solid rgba(79,70,229,0.12);
+      padding: 0.35rem 0.85rem; border-radius: var(--radius-full);
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s var(--ease) both;
+    }
+    .hero-badge .material-symbols-outlined { font-size: 14px; }
+    .hero-title {
+      font-size: clamp(3rem, 5.5vw, 4.2rem); font-weight: 800;
+      line-height: 1.05; letter-spacing: -0.035em; margin-bottom: 1.25rem;
+      animation: fadeUp 0.6s var(--ease) 0.1s both;
+    }
+    .hero-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, #818CF8 50%, var(--primary-hover) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 5s ease infinite;
+    }
+    @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .hero-desc {
+      font-size: 1.15rem; line-height: 1.7; color: var(--text-secondary);
+      max-width: 480px; margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s var(--ease) 0.2s both;
+    }
+    .hero-actions {
+      display: flex; gap: 0.75rem; flex-wrap: wrap;
+      animation: fadeUp 0.6s var(--ease) 0.3s both;
+    }
+    .hero-kbd {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem;
+      animation: fadeUp 0.6s var(--ease) 0.4s both;
+    }
+    .hero-kbd kbd {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 24px; height: 24px; padding: 0 0.45rem;
+      font-family: var(--font-mono); font-size: 0.65rem; font-weight: 600;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; box-shadow: 0 1px 0 var(--border);
+    }
+
+    /* ── Floating Dashboard Mockup ── */
+    .hero-visual { position: relative; height: 420px; animation: fadeUp 0.8s var(--ease) 0.3s both; }
+    .float-card {
+      position: absolute; background: var(--surface);
+      border: 1px solid var(--border-light); border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md); overflow: hidden;
+      transition: transform 0.4s var(--ease);
+    }
+    .float-card:hover { transform: translateY(-4px) !important; }
+    .float-main { width: 320px; z-index: 3; top: 40px; left: 50%; transform: translateX(-50%); }
+    .float-small-1 { width: 180px; z-index: 2; top: 20px; right: -20px; }
+    .float-small-2 { width: 170px; z-index: 2; bottom: 30px; left: 0; }
+    .float-card-img { height: 120px; background-size: cover; background-position: center; position: relative; }
+    .float-card-img::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,0.4)); }
+    .float-card-body { padding: 1rem; }
+    .float-card-tag {
+      display: inline-block; font-family: var(--font-mono); font-size: 0.55rem;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--primary); background: var(--primary-light);
+      padding: 0.15rem 0.5rem; border-radius: var(--radius-full); margin-bottom: 0.4rem;
+    }
+    .float-card-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .float-card-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.25rem; }
+    .float-card-meta .material-symbols-outlined { font-size: 12px; }
+    .float-stat { padding: 0.85rem; }
+    .float-stat-num { font-size: 1.4rem; font-weight: 700; }
+    .float-stat-label { font-size: 0.7rem; color: var(--text-muted); }
+
+    /* ══════════════════════════════════════
+       FLOATING METRICS
+       ══════════════════════════════════════ */
+    .metrics-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      background: var(--border-light); border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl); overflow: hidden;
+      box-shadow: var(--shadow); margin-top: -1px; position: relative; z-index: 3;
+    }
+    .metric-item {
+      background: var(--surface); padding: 1.5rem; text-align: center;
+      transition: background var(--transition);
+    }
+    .metric-item:hover { background: var(--surface-hover); }
+    .metric-num {
+      font-size: 2rem; font-weight: 800; color: var(--text);
+      font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+    }
+    .metric-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .metric-trend {
+      display: inline-flex; align-items: center; gap: 0.2rem;
+      font-size: 0.7rem; font-weight: 600; margin-top: 0.3rem;
+    }
+    .metric-trend.up { color: var(--success); }
+    .metric-trend .material-symbols-outlined { font-size: 14px; }
+
+    /* ══════════════════════════════════════
+       BENTO FEATURES
+       ══════════════════════════════════════ */
+    .section { padding: 5rem 0; }
+    .section-header { margin-bottom: 3rem; }
+    .section-label {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+      color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+    .section-label .material-symbols-outlined { font-size: 16px; }
+    .section-title { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.025em; margin-bottom: 0.4rem; }
+    .section-desc { font-size: 0.95rem; color: var(--text-secondary); max-width: 500px; line-height: 1.7; }
+
+    .bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1rem; }
+    .bento-card {
+      background: var(--surface); border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl); padding: 1.75rem;
+      position: relative; overflow: hidden; transition: all 0.3s var(--ease);
+    }
+    .bento-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
+    .bento-card.span-4 { grid-column: span 4; }
+    .bento-card.span-6 { grid-column: span 6; }
+    .bento-card.span-8 { grid-column: span 8; }
+    .bento-icon {
+      width: 44px; height: 44px; border-radius: var(--radius);
+      display: grid; place-items: center; margin-bottom: 1.25rem;
+    }
+    .bento-icon.blue { background: var(--primary-light); color: var(--primary); }
+    .bento-icon.green { background: var(--success-light); color: var(--success); }
+    .bento-icon.amber { background: var(--warning-light); color: var(--warning); }
+    .bento-icon.purple { background: var(--secondary-light); color: var(--secondary); }
+    .bento-icon.cyan { background: var(--info-light); color: var(--info); }
+    .bento-icon .material-symbols-outlined { font-size: 22px; }
+    .bento-num {
+      position: absolute; top: 1.25rem; right: 1.25rem;
+      font-family: var(--font-mono); font-size: 0.65rem; font-weight: 600;
+      color: var(--border); letter-spacing: 0.05em;
+    }
+    .bento-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.35rem; }
+    .bento-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.65; }
+
+    /* ══════════════════════════════════════
+       EVENT CARDS
+       ══════════════════════════════════════ */
+    .events-scroll {
+      display: flex; gap: 1.25rem; overflow-x: auto;
+      padding: 0.5rem 0 1.5rem; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+    }
+    .events-scroll::-webkit-scrollbar { height: 4px; }
+    .events-scroll::-webkit-scrollbar-track { background: transparent; }
+    .events-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .event-card-wrap { flex: 0 0 340px; scroll-snap-align: start; }
+    .event-card {
+      border: 1px solid var(--border-light); border-radius: var(--radius-xl);
+      background: var(--surface); overflow: hidden;
+      transition: all 0.35s var(--ease); cursor: pointer;
+    }
+    .event-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+    .event-card:hover .event-card-img img { transform: scale(1.06); }
+    .event-card-img { position: relative; height: 180px; overflow: hidden; }
+    .event-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease); }
+    .event-card-img::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.45));
+    }
+    .event-card-date {
+      position: absolute; top: 0.85rem; left: 0.85rem; z-index: 2;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+      border-radius: var(--radius-sm); padding: 0.35rem 0.65rem; text-align: center;
+      box-shadow: var(--shadow-sm); line-height: 1;
+    }
+    .event-card-date .month { display: block; font-family: var(--font-mono); font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); }
+    .event-card-date .day { display: block; font-size: 1.1rem; font-weight: 700; margin-top: 0.1rem; }
+    .event-card-status { position: absolute; top: 0.85rem; right: 0.85rem; z-index: 2; }
+    .event-card-body { padding: 1.1rem; }
+    .event-card-tag {
+      display: inline-block; font-family: var(--font-mono); font-size: 0.6rem;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--primary); background: var(--primary-light);
+      padding: 0.15rem 0.5rem; border-radius: var(--radius-full); margin-bottom: 0.5rem;
+    }
+    .event-card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; line-height: 1.3; }
+    .event-card-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.2rem; }
+    .event-card-meta .material-symbols-outlined { font-size: 14px; }
+    .event-card-footer {
+      padding: 0.65rem 1.1rem; border-top: 1px solid var(--border-light);
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--bg);
+    }
+    .event-card-cta {
+      opacity: 0; transform: translateX(6px);
+      transition: all 0.25s var(--ease);
+    }
+    .event-card:hover .event-card-cta { opacity: 1; transform: translateX(0); }
+
+    /* ══════════════════════════════════════
+       TESTIMONIALS
+       ══════════════════════════════════════ */
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .testimonial { padding: 1.5rem; }
+    .testimonial-stars { color: var(--warning); font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 0.75rem; }
+    .testimonial-text { font-size: 0.9rem; line-height: 1.65; color: var(--text-secondary); margin-bottom: 1rem; font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: 0.6rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); }
+    .testimonial-avatar {
+      width: 32px; height: 32px; border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 700; flex-shrink: 0;
+    }
+    .testimonial-name { font-size: 0.85rem; font-weight: 600; }
+    .testimonial-role { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* ══════════════════════════════════════
+       ACTIVITY TIMELINE
+       ══════════════════════════════════════ */
+    .timeline { position: relative; padding-left: 1.5rem; }
+    .timeline::before {
+      content: ''; position: absolute; left: 5px; top: 0; bottom: 0;
+      width: 2px; background: linear-gradient(180deg, var(--primary), var(--border-light));
+    }
+    .timeline-item { position: relative; padding-bottom: 1.25rem; }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-dot {
+      position: absolute; left: -1.5rem; top: 0.15rem;
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 2px solid var(--surface);
+    }
+    .timeline-dot.blue { background: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
+    .timeline-dot.green { background: var(--success); box-shadow: 0 0 0 3px rgba(22,163,74,0.15); }
+    .timeline-dot.amber { background: var(--warning); box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+    .timeline-time { font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); margin-bottom: 0.15rem; }
+    .timeline-text { font-size: 0.85rem; color: var(--text-secondary); }
+    .timeline-text strong { color: var(--text); font-weight: 600; }
+
+    /* ══════════════════════════════════════
+       CTA
+       ══════════════════════════════════════ */
+    .cta-box {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      border-radius: var(--radius-xl); padding: 4.5rem 3rem; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-box::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 500px 300px at 30% 80%, rgba(79,70,229,0.15), transparent),
+        radial-gradient(ellipse 400px 250px at 70% 20%, rgba(129,140,248,0.12), transparent);
+    }
+    .cta-box h2 { font-size: clamp(1.7rem, 3vw, 2.4rem); color: #fff; margin-bottom: 0.5rem; position: relative; font-weight: 700; }
+    .cta-box p { font-size: 0.95rem; color: rgba(255,255,255,0.55); max-width: 420px; margin: 0 auto 2rem; position: relative; line-height: 1.7; }
+
+    /* ══════════════════════════════════════
+       FOOTER
+       ══════════════════════════════════════ */
+    .footer { background: var(--surface); border-top: 1px solid var(--border-light); padding: 2.5rem 0 1.25rem; }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-light); }
+    .footer-brand { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .footer-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; max-width: 260px; }
+    .footer-heading { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.75rem; }
+    .footer-links { list-style: none; }
+    .footer-links li { margin-bottom: 0.4rem; }
+    .footer-links a { font-size: 0.85rem; color: var(--text-secondary); transition: color var(--transition); }
+    .footer-links a:hover { color: var(--primary); }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ══════════════════════════════════════
+       COMMAND PALETTE
+       ══════════════════════════════════════ */
+    .cmd-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px); z-index: 5000;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding-top: 20vh; opacity: 0; pointer-events: none;
+      transition: opacity 0.15s var(--ease);
+    }
+    .cmd-overlay.active { opacity: 1; pointer-events: auto; }
+    .cmd-palette {
+      width: 100%; max-width: 540px; background: var(--surface);
+      border: 1px solid var(--border-light); border-radius: var(--radius-xl);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+      overflow: hidden; transform: scale(0.96) translateY(-8px);
+      transition: transform 0.2s var(--spring);
+    }
+    .cmd-overlay.active .cmd-palette { transform: scale(1) translateY(0); }
+    .cmd-input-wrap {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.9rem 1rem; border-bottom: 1px solid var(--border-light);
+    }
+    .cmd-input-wrap .material-symbols-outlined { color: var(--text-muted); font-size: 20px; }
+    .cmd-input { flex: 1; border: none; outline: none; font-size: 0.95rem; background: transparent; color: var(--text); }
+    .cmd-input::placeholder { color: var(--text-muted); }
+    .cmd-kbd {
+      font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-muted);
+      background: var(--bg-alt); padding: 0.2rem 0.4rem; border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .cmd-results { max-height: 320px; overflow-y: auto; padding: 0.5rem; }
+    .cmd-group { padding: 0.5rem 0.75rem 0.25rem; font-size: 0.65rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .cmd-item {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.55rem 0.75rem; border-radius: var(--radius-sm);
+      cursor: pointer; transition: background var(--transition);
+    }
+    .cmd-item:hover { background: var(--primary-light); }
+    .cmd-item .material-symbols-outlined { font-size: 18px; color: var(--text-muted); }
+    .cmd-item-text { font-size: 0.85rem; color: var(--text); }
+    .cmd-item-hint { font-size: 0.7rem; color: var(--text-muted); margin-left: auto; }
+    .cmd-footer {
+      padding: 0.5rem 0.75rem; border-top: 1px solid var(--border-light);
+      display: flex; gap: 1rem; font-size: 0.65rem; color: var(--text-muted);
+    }
+    .cmd-footer kbd {
+      font-family: var(--font-mono); font-size: 0.6rem; background: var(--bg-alt);
+      padding: 0.1rem 0.35rem; border-radius: 3px; border: 1px solid var(--border);
+    }
+
+    /* ══════════════════════════════════════
+       FLOATING ACTION BUTTON
+       ══════════════════════════════════════ */
+    .fab {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100;
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff; border: none; border-radius: var(--radius-full);
+      font-weight: 600; font-size: 0.85rem; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(79,70,229,0.25);
+      transition: all 0.25s var(--ease);
+    }
+    .fab:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 24px rgba(79,70,229,0.35); }
+    .fab .material-symbols-outlined { font-size: 20px; }
+    @media (max-width: 768px) { .fab span:last-child { display: none; } }
+
+    /* ══════════════════════════════════════
+       SKELETON
+       ══════════════════════════════════════ */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-alt) 25%, var(--border-light) 50%, var(--bg-alt) 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite;
+      border-radius: var(--radius-sm);
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .skeleton-card { border: 1px solid var(--border-light); border-radius: var(--radius-xl); overflow: hidden; }
+    .skeleton-img { height: 180px; }
+    .skeleton-text { height: 12px; margin: 0.75rem 1rem 0; border-radius: 4px; }
+    .skeleton-text-sm { height: 10px; margin: 0.5rem 1rem 1rem; width: 55%; border-radius: 4px; }
+
+    /* ══════════════════════════════════════
+       RESPONSIVE
+       ══════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .hero-grid { grid-template-columns: 1fr; text-align: center; }
+      .hero-desc { margin: 0 auto 2rem; }
+      .hero-actions { justify-content: center; }
+      .hero-visual { display: none; }
+      .bento-card.span-4, .bento-card.span-6, .bento-card.span-8 { grid-column: span 6; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .hero { padding: 4rem 0 3rem; }
+      .hero-title { font-size: 2.4rem; }
+      .metrics-row { grid-template-columns: repeat(2, 1fr); }
+      .metric-item:nth-child(2) { border-right: none; }
+      .bento-card.span-4, .bento-card.span-6, .bento-card.span-8 { grid-column: span 12; }
+      .event-card-wrap { flex: 0 0 290px; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; gap: 0.75rem; text-align: center; }
+    }
+  </style>
 </head>
 <body>
-  <div class="page-wrapper" id="app">
+  <!-- Aurora Background -->
+  <div class="aurora-bg">
+    <div class="aurora-blob aurora-1"></div>
+    <div class="aurora-blob aurora-2"></div>
+    <div class="aurora-blob aurora-3"></div>
+  </div>
+  <div class="dot-grid"></div>
+
+  <div class="page-wrapper">
     <div id="navbar-placeholder"></div>
 
-    <main class="main-content landing-shell" style="padding-top:0;">
-      <section class="landing-hero">
-        <div class="container landing-grid">
-          <div class="landing-copy">
-            <div class="landing-kicker">EventSphere / operations console</div>
-            <h1 class="landing-title">Run events with structure, status, and no noise.</h1>
-            <p class="landing-subtitle">Swiss grid. Brutal edge. Real lifecycle rail. EventSphere keeps capacity, attendance, feedback, and org ops in one system.</p>
-
-            <div class="landing-actions" id="hero-actions">
-              <a href="/signup.html" class="btn btn-primary btn-lg" id="hero-start">Create account</a>
-              <a href="/events.html" class="btn btn-secondary btn-lg" id="hero-browse">Browse events</a>
+    <main class="main-content">
+      <!-- ═══ HERO ═══ -->
+      <section class="hero">
+        <div class="container">
+          <div class="hero-grid">
+            <div>
+              <div class="hero-badge"><span class="material-symbols-outlined">bolt</span> Enterprise Event Platform</div>
+              <h1 class="hero-title">Run events with <span class="hero-gradient">clarity</span> and control.</h1>
+              <p class="hero-desc">Lifecycle management, capacity control, and role-aware access. Everything you need to run professional events — in one place.</p>
+              <div class="hero-actions" id="hero-actions">
+                <a href="/signup.html" class="btn btn-primary btn-lg">Get started free <span class="material-symbols-outlined">arrow_forward</span></a>
+                <a href="/events.html" class="btn btn-secondary btn-lg">Browse events</a>
+              </div>
+              <div class="hero-kbd">Press <kbd>⌘</kbd><kbd>K</kbd> to open command palette</div>
             </div>
-
-            <div class="landing-metrics">
-              <div class="metric-box"><strong id="stat-events">0</strong><span>Published</span></div>
-              <div class="metric-box"><strong id="stat-orgs">0</strong><span>Organizations</span></div>
-              <div class="metric-box"><strong id="stat-capacity">0</strong><span>Registrations</span></div>
+            <div class="hero-visual">
+              <div class="float-card float-main" id="float-main">
+                <div id="float-img" style="height:130px;background-size:cover;background-position:center;"></div>
+                <div class="float-card-body">
+                  <div class="float-card-tag">Live</div>
+                  <div class="float-card-title">Tech Summit 2026</div>
+                  <div class="float-card-meta"><span class="material-symbols-outlined">location_on</span> Innovation Hub</div>
+                  <div style="margin-top:0.6rem;display:flex;align-items:center;gap:0.5rem;">
+                    <div class="avatar-stack"><div class="mini-avatar" style="width:22px;height:22px;font-size:0.5rem;">JD</div><div class="mini-avatar" style="width:22px;height:22px;font-size:0.5rem;background:var(--success);">AM</div><div class="mini-avatar more" style="width:22px;height:22px;font-size:0.5rem;">+42</div></div>
+                    <span style="font-size:0.7rem;color:var(--text-muted);">42 attending</span>
+                  </div>
+                </div>
+              </div>
+              <div class="float-card float-small-1">
+                <div class="float-stat" style="text-align:center;">
+                  <div class="float-stat-num" style="color:var(--primary);" id="float-stat-1">0</div>
+                  <div class="float-stat-label">Events</div>
+                </div>
+              </div>
+              <div class="float-card float-small-2">
+                <div class="float-stat" style="text-align:center;">
+                  <div class="float-stat-num" style="color:var(--success);">99.9%</div>
+                  <div class="float-stat-label">Uptime</div>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div class="landing-rail">
-            <div class="landing-rail-label">Live event loop</div>
-            <div class="vertical-carousel" id="hero-carousel"></div>
           </div>
         </div>
       </section>
 
-      <section class="landing-bento section-block">
-        <div class="container">
-          <div class="section-head">
-            <div>
-              <h2 class="section-title">Built for organizers, participants, and real operations.</h2>
-              <p class="section-subtitle">Role access, waitlists, feedback, organizations, and attendance. No fake backend promises.</p>
-            </div>
+      <!-- ═══ METRICS ═══ -->
+      <div class="container" style="margin-top:-1px;position:relative;z-index:3;">
+        <div class="metrics-row reveal">
+          <div class="metric-item">
+            <div class="metric-num" data-count="0" id="g-events">0</div>
+            <div class="metric-label">Published Events</div>
+            <div class="metric-trend up"><span class="material-symbols-outlined">trending_up</span> Live</div>
           </div>
+          <div class="metric-item">
+            <div class="metric-num" data-count="0" id="g-orgs">0</div>
+            <div class="metric-label">Organizations</div>
+            <div class="metric-trend up"><span class="material-symbols-outlined">trending_up</span> Growing</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-num" data-count="0" id="g-regs">0</div>
+            <div class="metric-label">Registrations</div>
+            <div class="metric-trend up"><span class="material-symbols-outlined">trending_up</span> Active</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-num">6</div>
+            <div class="metric-label">Categories</div>
+            <div class="metric-trend up"><span class="material-symbols-outlined">check_circle</span> Available</div>
+          </div>
+        </div>
+      </div>
 
-          <div class="bento-grid">
-            <article class="bento-card bento-large">
-              <div class="bento-index">01</div>
-              <h3>Lifecycle rail</h3>
-              <p>Draft &rarr; published &rarr; completed. Cancelled branch stays visible.</p>
+      <!-- ═══ BENTO FEATURES ═══ -->
+      <section class="section">
+        <div class="container">
+          <div class="section-header reveal">
+            <div class="section-label"><span class="material-symbols-outlined">widgets</span> Capabilities</div>
+            <h2 class="section-title">Built for real event operations</h2>
+            <p class="section-desc">Enterprise-grade tools designed for organizers, participants, and teams.</p>
+          </div>
+          <div class="bento">
+            <article class="bento-card span-8 reveal">
+              <div class="bento-num">01</div>
+              <div class="bento-icon blue"><span class="material-symbols-outlined">linear_scale</span></div>
+              <h3 class="bento-title">Lifecycle Management</h3>
+              <p class="bento-desc">Draft → Published → Completed. Full state machine with visibility at every step. Cancelled branch stays visible for audit trails.</p>
+              <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:1rem;">
+                <div class="lc-step">Draft</div><span class="lc-arrow">→</span>
+                <div class="lc-step current">Published</div><span class="lc-arrow">→</span>
+                <div class="lc-step">Completed</div>
+              </div>
             </article>
-            <article class="bento-card">
-              <div class="bento-index">02</div>
-              <h3>Role aware</h3>
-              <p>Participants, organizers, admins. Views change by role.</p>
+            <article class="bento-card span-4 reveal reveal-delay-1">
+              <div class="bento-num">02</div>
+              <div class="bento-icon green"><span class="material-symbols-outlined">shield</span></div>
+              <h3 class="bento-title">Role-Based Access</h3>
+              <p class="bento-desc">Participants, organizers, and admins see exactly what they need — nothing more.</p>
             </article>
-            <article class="bento-card">
-              <div class="bento-index">03</div>
-              <h3>Waitlist + capacity</h3>
-              <p>Filled seats, totals, and open slots stay visible.</p>
+            <article class="bento-card span-4 reveal reveal-delay-2">
+              <div class="bento-num">03</div>
+              <div class="bento-icon amber"><span class="material-symbols-outlined">group</span></div>
+              <h3 class="bento-title">Capacity & Waitlists</h3>
+              <p class="bento-desc">Real-time seat tracking with automatic waitlist management when events fill up.</p>
             </article>
-            <article class="bento-card">
-              <div class="bento-index">04</div>
-              <h3>Feedback loop</h3>
-              <p>Ratings and comments attach to event detail.</p>
+            <article class="bento-card span-4 reveal reveal-delay-3">
+              <div class="bento-num">04</div>
+              <div class="bento-icon purple"><span class="material-symbols-outlined">rate_review</span></div>
+              <h3 class="bento-title">Feedback Loop</h3>
+              <p class="bento-desc">Ratings and reviews attach directly to events. Real insights from real attendees.</p>
             </article>
-            <article class="bento-card bento-wide">
-              <div class="bento-index">05</div>
-              <h3>Organization control</h3>
-              <p>Organizations, registrations, attendance, and event state. All in one shell.</p>
+            <article class="bento-card span-4 reveal reveal-delay-4">
+              <div class="bento-num">05</div>
+              <div class="bento-icon cyan"><span class="material-symbols-outlined">analytics</span></div>
+              <h3 class="bento-title">Live Dashboard</h3>
+              <p class="bento-desc">Registrations, attendance, and event stats — all updated in real-time.</p>
             </article>
           </div>
         </div>
       </section>
 
-      <section class="section-block" id="upcoming-section">
+      <!-- ═══ EVENTS ═══ -->
+      <section class="section" style="background:var(--surface);border-top:1px solid var(--border-light);border-bottom:1px solid var(--border-light);">
         <div class="container">
-          <div class="section-head">
-            <div>
+          <div style="display:flex;justify-content:space-between;align-items:end;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;">
+            <div class="section-header reveal" style="margin-bottom:0;">
+              <div class="section-label"><span class="material-symbols-outlined">bolt</span> Live Feed</div>
               <h2 class="section-title">Upcoming events</h2>
-              <p class="section-subtitle">Live feed from backend. Scroll rail stays on right.</p>
             </div>
-            <a href="/events.html" class="btn btn-ghost" id="view-all-events">View all</a>
+            <a href="/events.html" class="btn btn-ghost btn-sm reveal">View all <span class="material-symbols-outlined">arrow_forward</span></a>
           </div>
-          <div class="grid grid-3" id="upcoming-events">
-            <div class="spinner-center" style="grid-column: 1/-1;"><div class="spinner"></div></div>
+          <div class="events-scroll" id="upcoming-events">
+            <div class="event-card-wrap"><div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-text" style="width:40%;"></div><div class="skeleton skeleton-text" style="width:80%;"></div><div class="skeleton skeleton-text-sm"></div></div></div>
+            <div class="event-card-wrap"><div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-text" style="width:40%;"></div><div class="skeleton skeleton-text" style="width:80%;"></div><div class="skeleton skeleton-text-sm"></div></div></div>
+            <div class="event-card-wrap"><div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton skeleton-text" style="width:40%;"></div><div class="skeleton skeleton-text" style="width:80%;"></div><div class="skeleton skeleton-text-sm"></div></div></div>
           </div>
         </div>
       </section>
+
+      <!-- ═══ TESTIMONIALS + ACTIVITY ═══ -->
+      <section class="section">
+        <div class="container">
+          <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:3.5rem;align-items:start;">
+            <div class="reveal">
+              <div class="section-label"><span class="material-symbols-outlined">favorite</span> Testimonials</div>
+              <h2 class="section-title" style="margin-bottom:1.5rem;">What organizers say</h2>
+              <div style="display:flex;flex-direction:column;gap:1rem;">
+                <div class="card testimonial">
+                  <div class="testimonial-stars">★★★★★</div>
+                  <p class="testimonial-text">"Replaced three separate tools. The lifecycle system alone saved us hours every week."</p>
+                  <div class="testimonial-author">
+                    <div class="testimonial-avatar">SK</div>
+                    <div><div class="testimonial-name">Sarah Kim</div><div class="testimonial-role">Community Organizer</div></div>
+                  </div>
+                </div>
+                <div class="card testimonial">
+                  <div class="testimonial-stars">★★★★★</div>
+                  <p class="testimonial-text">"The waitlist system is brilliant. No more spreadsheets. Everything is real-time."</p>
+                  <div class="testimonial-author">
+                    <div class="testimonial-avatar" style="background:linear-gradient(135deg,var(--success),#059669);">MR</div>
+                    <div><div class="testimonial-name">Marcus Rivera</div><div class="testimonial-role">Tech Meetup Lead</div></div>
+                  </div>
+                </div>
+                <div class="card testimonial">
+                  <div class="testimonial-stars">★★★★★</div>
+                  <p class="testimonial-text">"From draft to feedback in one flow. Attendance went up 40% after switching."</p>
+                  <div class="testimonial-author">
+                    <div class="testimonial-avatar" style="background:linear-gradient(135deg,var(--warning),#D97706);">DP</div>
+                    <div><div class="testimonial-name">David Park</div><div class="testimonial-role">Festival Coordinator</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="reveal reveal-delay-2">
+              <div class="section-label"><span class="material-symbols-outlined">history</span> Recent Activity</div>
+              <h2 class="section-title" style="margin-bottom:1.5rem;">Platform activity</h2>
+              <div class="card" style="padding:1.5rem;">
+                <div class="timeline">
+                  <div class="timeline-item"><div class="timeline-dot blue"></div><div class="timeline-time">2 min ago</div><div class="timeline-text"><strong>John</strong> created event <strong>Tech Summit 2026</strong></div></div>
+                  <div class="timeline-item"><div class="timeline-dot green"></div><div class="timeline-time">15 min ago</div><div class="timeline-text"><strong>Sarah</strong> registered for <strong>AI Workshop</strong></div></div>
+                  <div class="timeline-item"><div class="timeline-dot amber"></div><div class="timeline-time">1 hour ago</div><div class="timeline-text"><strong>Marcus</strong> published event <strong>Dev Meetup</strong></div></div>
+                  <div class="timeline-item"><div class="timeline-dot blue"></div><div class="timeline-time">3 hours ago</div><div class="timeline-text"><strong>System</strong> processed <strong>12 registrations</strong></div></div>
+                  <div class="timeline-item"><div class="timeline-dot green"></div><div class="timeline-time">5 hours ago</div><div class="timeline-text"><strong>Julia</strong> left a review on <strong>Summer Fest</strong></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ CTA ═══ -->
+      <section class="section" style="padding-bottom:5rem;">
+        <div class="container">
+          <div class="cta-box reveal">
+            <h2>Ready to run better events?</h2>
+            <p>Join organizers who manage capacity, attendance, and feedback in one platform.</p>
+            <div style="display:flex;justify-content:center;gap:0.75rem;position:relative;">
+              <a href="/signup.html" class="btn btn-primary btn-lg">Get started free <span class="material-symbols-outlined">arrow_forward</span></a>
+              <a href="/events.html" class="btn btn-secondary btn-lg" style="border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.05);">Explore events</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ FOOTER ═══ -->
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-grid">
+            <div>
+              <div class="footer-brand"><div class="brand-icon" style="width:28px;height:28px;border-radius:8px;"><span class="material-symbols-outlined" style="font-size:16px;">event</span></div> EventSphere</div>
+              <p class="footer-desc">Enterprise event operations with lifecycle, capacity, and role-aware control.</p>
+            </div>
+            <div>
+              <div class="footer-heading">Platform</div>
+              <ul class="footer-links">
+                <li><a href="/events.html">Browse Events</a></li>
+                <li><a href="/signup.html">Create Account</a></li>
+                <li><a href="/login.html">Sign In</a></li>
+              </ul>
+            </div>
+            <div>
+              <div class="footer-heading">Resources</div>
+              <ul class="footer-links">
+                <li><a href="#">Documentation</a></li>
+                <li><a href="#">API Reference</a></li>
+              </ul>
+            </div>
+            <div>
+              <div class="footer-heading">Company</div>
+              <ul class="footer-links">
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <span>&copy; 2026 EventSphere. All rights reserved.</span>
+          </div>
+        </div>
+      </footer>
     </main>
+
+    <!-- FAB -->
+    <button class="fab" id="fab-btn" onclick="window.location.href='/create-event.html'" style="display:none;">
+      <span class="material-symbols-outlined">add</span><span>Create Event</span>
+    </button>
+
+    <!-- Command Palette -->
+    <div class="cmd-overlay" id="cmd-overlay">
+      <div class="cmd-palette">
+        <div class="cmd-input-wrap">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" class="cmd-input" id="cmd-input" placeholder="Search events, actions..." oninput="filterCmds(this.value)">
+          <span class="cmd-kbd">ESC</span>
+        </div>
+        <div class="cmd-results" id="cmd-results">
+          <div class="cmd-group">Navigation</div>
+          <div class="cmd-item" onclick="cmdGo('/')"><span class="material-symbols-outlined">home</span><span class="cmd-item-text">Home</span><span class="cmd-item-hint">Go to home</span></div>
+          <div class="cmd-item" onclick="cmdGo('/events.html')"><span class="material-symbols-outlined">event</span><span class="cmd-item-text">Browse Events</span><span class="cmd-item-hint">View all</span></div>
+          <div class="cmd-item" onclick="cmdGo('/dashboard.html')"><span class="material-symbols-outlined">dashboard</span><span class="cmd-item-text">Dashboard</span><span class="cmd-item-hint">Workspace</span></div>
+          <div class="cmd-group">Actions</div>
+          <div class="cmd-item" onclick="cmdGo('/create-event.html')"><span class="material-symbols-outlined">add_circle</span><span class="cmd-item-text">Create Event</span><span class="cmd-item-hint">New event</span></div>
+          <div class="cmd-item" onclick="cmdGo('/events.html')"><span class="material-symbols-outlined">search</span><span class="cmd-item-text">Search Events</span><span class="cmd-item-hint">Find events</span></div>
+          <div class="cmd-group">Account</div>
+          <div class="cmd-item" onclick="cmdGo('/login.html')"><span class="material-symbols-outlined">login</span><span class="cmd-item-text">Sign In</span><span class="cmd-item-hint">Log in</span></div>
+          <div class="cmd-item" onclick="cmdGo('/signup.html')"><span class="material-symbols-outlined">person_add</span><span class="cmd-item-text">Create Account</span><span class="cmd-item-hint">Sign up</span></div>
+        </div>
+        <div class="cmd-footer">
+          <span><kbd>↑↓</kbd> Navigate</span>
+          <span><kbd>↵</kbd> Open</span>
+          <span><kbd>ESC</kbd> Close</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
   </div>
 
   <script src="/js/app.js"></script>
   <script>
+    // ── Navbar ──
     document.getElementById('navbar-placeholder').innerHTML = renderNavbar('home');
     initNavbar();
 
+    // ── FAB ──
+    if (Auth.isLoggedIn() && Auth.isOrganizer()) document.getElementById('fab-btn').style.display = 'flex';
+
+    // ── Hero CTA ──
     if (Auth.isLoggedIn()) {
-      window.location.replace('/dashboard.html');
+      document.getElementById('hero-actions').innerHTML = '<a href="/dashboard.html" class="btn btn-primary btn-lg">Open dashboard <span class="material-symbols-outlined">arrow_forward</span></a>';
     }
 
-    const heroCarousel = document.getElementById('hero-carousel');
-    const carouselCards = [
-      { title: 'Draft', text: 'Build event structure first.', img: getSampleBanner(0) },
-      { title: 'Published', text: 'Open event to audience.', img: getSampleBanner(1) },
-      { title: 'Completed', text: 'Close loop with feedback.', img: getSampleBanner(2) },
-      { title: 'Cancelled', text: 'Interrupt branch stays explicit.', img: getSampleBanner(3) },
-    ];
-
-    if (heroCarousel) {
-      const loopItems = [...carouselCards, ...carouselCards];
-      heroCarousel.innerHTML = loopItems.map(card => `
-        <article class="vertical-card">
-          <div class="vertical-card-image" style="background-image:url('${card.img}')"></div>
-          <div class="vertical-card-body">
-            <div class="badge badge-amber" style="margin-bottom:0.45rem;">${card.title}</div>
-            <h3>${card.text}</h3>
-          </div>
-        </article>
-      `).join('');
+    // ── Command Palette ──
+    const cmdOv = document.getElementById('cmd-overlay');
+    document.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); cmdOv.classList.add('active'); document.getElementById('cmd-input').value = ''; document.getElementById('cmd-input').focus(); filterCmds(''); }
+      if (e.key === 'Escape') cmdOv.classList.remove('active');
+    });
+    cmdOv.addEventListener('click', e => { if (e.target === cmdOv) cmdOv.classList.remove('active'); });
+    function cmdGo(u) { cmdOv.classList.remove('active'); window.location.href = u; }
+    function filterCmds(q) {
+      const items = document.querySelectorAll('.cmd-item');
+      const groups = document.querySelectorAll('.cmd-group');
+      const lq = q.toLowerCase();
+      items.forEach(i => { i.style.display = i.textContent.toLowerCase().includes(lq) ? 'flex' : 'none'; });
+      groups.forEach(g => {
+        let n = g.nextElementSibling, vis = false;
+        while (n && !n.classList.contains('cmd-group')) { if (n.style.display !== 'none') vis = true; n = n.nextElementSibling; }
+        g.style.display = vis ? 'block' : 'none';
+      });
     }
 
-    if (Auth.isLoggedIn()) {
-      const isOrg = Auth.isOrganizer();
-      document.getElementById('hero-actions').innerHTML = `
-        <a href="/dashboard.html" class="btn btn-primary btn-lg">Open dashboard</a>
-        ${isOrg ? `<a href="/create-event.html" class="btn btn-secondary btn-lg">Create event</a>` : ''}
-      `;
+    // ── Hero Image ──
+    document.getElementById('float-img').style.backgroundImage = `url('${getSampleBanner(0)}')`;
+
+    // ── Animated Counter ──
+    function animateCount(el, target) {
+      if (target === 0) return;
+      let cur = 0;
+      const step = Math.max(1, Math.ceil(target / 50));
+      const timer = setInterval(() => {
+        cur += step;
+        if (cur >= target) { cur = target; clearInterval(timer); }
+        el.textContent = cur.toLocaleString();
+      }, 25);
     }
 
-    async function loadHomePage() {
+    // ── Scroll Reveal ──
+    function initReveal() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    }
+    initReveal();
+
+    // ── Load Data ──
+    async function loadHome() {
       try {
-        try {
-          const statsRes = await api('/events/stats');
-          if (statsRes.data) {
-            document.getElementById('stat-events').textContent = statsRes.data.totalEvents || 0;
-            document.getElementById('stat-orgs').textContent = statsRes.data.totalOrgs || 0;
-            document.getElementById('stat-capacity').textContent = statsRes.data.totalRegistrations || 0;
-          }
-        } catch {
-          document.getElementById('stat-events').textContent = '0';
-          document.getElementById('stat-orgs').textContent = '0';
-          document.getElementById('stat-capacity').textContent = '0';
+        const stats = await api('/events/stats');
+        if (stats.data) {
+          const e = stats.data.totalEvents || 0;
+          const o = stats.data.totalOrgs || 0;
+          const r = stats.data.totalRegistrations || 0;
+          animateCount(document.getElementById('g-events'), e);
+          animateCount(document.getElementById('g-orgs'), o);
+          animateCount(document.getElementById('g-regs'), r);
+          animateCount(document.getElementById('float-stat-1'), e);
+          document.getElementById('stat-upcoming') && (document.getElementById('stat-upcoming').textContent = e);
         }
+      } catch (e) {}
 
-        const eventsRes = await api('/events?status=published&limit=3');
-        const container = document.getElementById('upcoming-events');
-
-        if (eventsRes.data?.events && eventsRes.data.events.length > 0) {
-          container.innerHTML = eventsRes.data.events.map((e, i) => renderEventCard(e, i)).join('');
-        } else {
-          showEmpty('upcoming-events', 'event_busy', 'No upcoming events yet', 'Be the first to host an event for your community.');
-        }
-      } catch (err) {
-        showEmpty('upcoming-events', 'error', 'Unable to load events', err.message);
+      try {
+        const res = await api('/events?status=published&limit=6');
+        const events = res.data?.events || [];
+        const el = document.getElementById('upcoming-events');
+        if (!events.length) { el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);width:100%;"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:0.5rem;">event_busy</span>No upcoming events yet.</div>'; return; }
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const cats = ['Technology','Business','Design','Education','Social','Workshop'];
+        el.innerHTML = events.map((e, i) => {
+          const d = new Date(e.date || e.createdAt);
+          return `<div class="event-card-wrap"><div class="event-card" onclick="window.location.href='/event.html?id=${e._id}'">
+            <div class="event-card-img"><img src="${getSampleBanner(i)}" alt="" loading="lazy">
+              <div class="event-card-date"><span class="month">${months[d.getMonth()]}</span><span class="day">${d.getDate()}</span></div>
+              <div class="event-card-status">${statusBadge(e.status || 'published')}</div>
+            </div>
+            <div class="event-card-body">
+              <div class="event-card-tag">${cats[i % cats.length]}</div>
+              <div class="event-card-title">${escapeHtml(e.title || 'Event')}</div>
+              <div class="event-card-meta"><span class="material-symbols-outlined">location_on</span>${escapeHtml(e.venue || 'TBA')}</div>
+              <div class="event-card-meta"><span class="material-symbols-outlined">schedule</span>${timeUntil(e.date)}</div>
+            </div>
+            <div class="event-card-footer">
+              <div class="avatar-stack"><div class="mini-avatar" style="width:22px;height:22px;font-size:0.5rem;">U</div><div class="mini-avatar more" style="width:22px;height:22px;font-size:0.5rem;">+${e.registeredCount || 0}</div></div>
+              <span class="btn btn-primary btn-sm event-card-cta" style="padding:0.25rem 0.6rem;font-size:0.7rem;">View →</span>
+            </div>
+          </div></div>`;
+        }).join('');
+      } catch (e) {
+        document.getElementById('upcoming-events').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted);width:100%;">Unable to load events</div>';
       }
     }
 
-    loadHomePage();
+    loadHome();
   </script>
 </body>
 </html>
